@@ -219,7 +219,7 @@ function Get-CharmConfigContext {
 function Get-SystemContext {
     $ctxt = @{
         'my_ip' = Get-JujuUnitPrivateIP
-        'host' = $COMPUTERNAME
+        'host' = $env:COMPUTERNAME
         'lock_dir' = "$CINDER_DEFAULT_LOCK_DIR"
         'iscsi_lun_path' = "$CINDER_DEFAULT_ISCSI_LUN_DIR"
         'image_conversion_dir'= "$CINDER_DEFAULT_IMAGE_CONVERSION_DIR"
@@ -424,7 +424,7 @@ function New-CinderConfigFiles {
 function Set-ClusterServiceRelation {
     [Array]$clusterServices = Get-ClusterServices
     $relationData = @{
-        "computer-name" = $COMPUTERNAME
+        "computer-name" = $env:COMPUTERNAME
         "role-name" = Get-ClusterServiceRoleName
         "services" = Get-MarshaledObject -Object $clusterServices
     }
