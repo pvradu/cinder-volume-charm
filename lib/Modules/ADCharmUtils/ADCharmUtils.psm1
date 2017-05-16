@@ -109,6 +109,7 @@ function Get-ActiveDirectoryContext {
         "password" = $null
         "domainName" = $null
         "netbiosname" = $null
+        "suffix" = $null
     }
 
     $optionalContext = @{
