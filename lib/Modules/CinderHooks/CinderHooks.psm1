@@ -322,6 +322,8 @@ function New-CharmServices {
                         -DisplayName $charmServices[$key]["display_name"] `
                         -Description $charmServices[$key]["description"] `
                         -Confirm:$false
+            Start-ExternalCommand { sc.exe failure $charmServices[$key]["service"] reset=5 actions=restart/1000 }
+            Start-ExternalCommand { sc.exe failureflag $charmServices[$key]["service"] 1 }
             Stop-Service -Name $charmServices[$key]["service"]
         }
     }
