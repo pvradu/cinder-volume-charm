@@ -482,8 +482,6 @@ function Invoke-ConfigChangedHook {
                     $status = (Get-Service -Name $svc).Status
                     if($status -eq [System.ServiceProcess.ServiceControllerStatus]::Running) {
                         Restart-Service -Name $svc
-                    } else {
-                        Stop-Service -Name $svc
                     }
                 }
                 Set-JujuStatus -Status active -Message "Unit is ready"
