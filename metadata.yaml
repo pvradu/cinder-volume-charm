@@ -7,6 +7,10 @@ tags:
   - openstack
   - storage
   - windows
+  - samba
+  - iscsi
+  - microsoft
+  - volume
 series:
   - win2012
   - win2012r2
@@ -15,6 +19,8 @@ series:
   - win2016
   - win2016nano
 provides:
+  cloud-compute:
+    interface: nova-compute
   cinder-volume-service:
     interface: cinder
 requires:
