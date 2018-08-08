@@ -52,13 +52,19 @@ function Get-CharmServices {
     $pythonExe = Join-Path $pythonDir "python.exe"
     $cinderScript = Join-Path $pythonDir "Scripts\cinder-volume-script.py"
     $serviceWrapperCinderSMB = Get-ServiceWrapper -Service "CinderSMB" -InstallDir $CINDER_INSTALL_DIR
-    $cinderSMBConfig = Join-Path $CINDER_INSTALL_DIR "etc\cinder\cinder-smb.conf"
+    if($openstackVersion -in @('newton', 'ocata', 'pike')) {
+        $cinderSMBConfig = Join-Path $CINDER_INSTALL_DIR "etc\cinder\cinder-smb.conf"
+        $cinderISCSIConfig = Join-Path $CINDER_INSTALL_DIR "etc\cinder\cinder-iscsi.conf"
+    }
+    ElseIf($openstackVersion -eq 'queens'){
+        $cinderSMBConfig = Join-Path $CINDER_INSTALL_DIR "etc\cinder-smb.conf"
+        $cinderISCSIConfig = Join-Path $CINDER_INSTALL_DIR "etc\cinder-iscsi.conf"
+    }
     try {
         $serviceWrapperCinderISCSI = Get-ServiceWrapper -Service "CinderISCSI" -InstallDir $CINDER_INSTALL_DIR
     } catch {
         $serviceWrapperCinderISCSI = Get-ServiceWrapper -Service "CinderSMB" -InstallDir $CINDER_INSTALL_DIR
     }
-    $cinderISCSIConfig = Join-Path $CINDER_INSTALL_DIR "etc\cinder\cinder-iscsi.conf"
     $jujuCharmServices = @{
         'cinder-smb' = @{
             "template" = "$openstackVersion\cinder-smb.conf"
@@ -136,7 +142,7 @@ function Get-CharmServices {
             )
         }
     }
-    if($openstackVersion -in @('ocata', 'pike')) {
+    if($openstackVersion -in @('ocata', 'pike', 'queens')) {
         $jujuCharmServices['cinder-smb']['context_generators'] += @(
             @{
                 "generator" = (Get-Item "function:Get-CloudComputeContext").ScriptBlock
@@ -307,6 +313,7 @@ function Install-CinderFromMSI {
     if(!(Test-Path $CINDER_INSTALL_DIR)) {
         New-Item -ItemType Directory -Path $CINDER_INSTALL_DIR
     }
+
     $logFile = Join-Path $env:APPDATA "cinder-volume-installer-log.txt"
     $extraParams = @("SKIPCINDERCONF=1", "INSTALLDIR=`"$CINDER_INSTALL_DIR`"")
     Install-Msi -Installer $installerPath -LogFilePath $logFile -ExtraArgs $extraParams

@@ -20,8 +20,8 @@ Import-Module JujuWindowsUtils
 Import-Module JujuHelper
 
 
-$DEFAULT_OPENSTACK_VERSION = 'pike'
-$SUPPORTED_OPENSTACK_RELEASES = @('newton', 'ocata', 'pike')
+$DEFAULT_OPENSTACK_VERSION = 'queens'
+$SUPPORTED_OPENSTACK_RELEASES = @('mitaka', 'newton', 'ocata', 'queens')
 $DEFAULT_JUJU_RESOURCE_CONTENT = "Cloudbase default Juju resource"
 
 # Nova constants
@@ -53,6 +53,16 @@ $NOVA_PRODUCT = @{
         'default_installer_urls' = @{
             'msi' = 'https://cloudbase.it/downloads/HyperVNovaCompute_Pike_16_0_0.msi#md5=973f1f1c022ee7813e5c033f731689f0'
             'zip' = 'https://cloudbase.it/downloads/HyperVNovaCompute_Pike_16_0_0.zip#md5=3f5c27673e8d3f95e34caa490bd74052'
+        }
+        'compute_driver' = 'compute_hyperv.driver.HyperVDriver'
+        'compute_cluster_driver' = 'compute_hyperv.cluster.driver.HyperVClusterDriver'
+    }
+    'queens' = @{
+        'name' = 'OpenStack Hyper-V Compute Queens'
+        'version' = '17.0.0'
+        'default_installer_urls' = @{
+            'msi' = 'https://cloudbase.it/downloads/HyperVNovaCompute_Queens_17_0_0.msi#md5=78082d7b739e9a6580d280a368a3aa72'
+            'zip' = 'https://cloudbase.it/downloads/HyperVNovaCompute_Queens_17_0_0.zip#md5=3f5c27673e8d3f95e34caa490bd74052'
         }
         'compute_driver' = 'compute_hyperv.driver.HyperVDriver'
         'compute_cluster_driver' = 'compute_hyperv.cluster.driver.HyperVClusterDriver'
@@ -106,6 +116,14 @@ $CINDER_PRODUCT = @{
         'default_installer_urls' = @{
             'msi' = 'https://cloudbase.it/downloads/CinderVolumeSetup_Pike_11_0_0.msi#md5=31b8988337e3ecf1b628f74019281a0d'
             'zip' = 'https://cloudbase.it/downloads/CinderVolumeSetup_Pike_11_0_0.zip#md5=e1a59e852e06c2db2e59ce4ab926c403'
+        }
+    }
+    'queens' = @{
+        'name' = 'OpenStack Cinder Volume Queens'
+        'version' = '12.0.0'
+        'default_installer_urls' = @{
+            'msi' = 'https://cloudbase.it/downloads/CinderVolumeSetup_Queens_12_0_0.msi#md5=7ec3cd284ecb56250ce4bb82eb529b0d'
+            'zip' = 'https://cloudbase.it/downloads/CinderVolumeSetup_Queens_12_0_0.zip#md5=e1a59e852e06c2db2e59ce4ab926c403'
         }
     }
 }
@@ -180,16 +198,28 @@ function Get-ServiceWrapper {
         [Parameter(Mandatory=$true)]
         [string]$InstallDir
     )
-
-    $wrapperName = ("OpenStackService{0}.exe" -f $Service)
-    $svcPath = Join-Path $InstallDir ("bin\{0}" -f $wrapperName)
-    if (!(Test-Path $svcPath)) {
-        $svcPath = Join-Path $InstallDir "bin\OpenStackService.exe"
+    if($openstackVersion -in @('newton', 'ocata', 'pike')) {
+        $wrapperName = ("OpenStackService{0}.exe" -f $Service)
+        $svcPath = Join-Path $InstallDir ("bin\{0}" -f $wrapperName)
         if (!(Test-Path $svcPath)) {
-            Throw "Failed to find service wrapper"
+            $svcPath = Join-Path $InstallDir "bin\OpenStackService.exe"
+            if (!(Test-Path $svcPath)) {
+                Throw "Failed to find service wrapper"
+            }
         }
+        return $svcPath
     }
-    return $svcPath
+    ElseIf($openstackVersion -eq 'queens'){
+        $wrapperName = ("CinderVolumeService{0}.exe" -f $Service)
+        $svcPath = Join-Path $InstallDir ("bin\{0}" -f $wrapperName)
+        if (!(Test-Path $svcPath)) {
+            $svcPath = Join-Path $InstallDir "bin\CinderVolumeService.exe"
+            if (!(Test-Path $svcPath)) {
+                Throw "Failed to find service wrapper"
+            }
+        }
+        return $svcPath
+    }
 }
 
 function New-ConfigFile {
