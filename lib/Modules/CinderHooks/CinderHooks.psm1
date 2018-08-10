@@ -56,7 +56,7 @@ function Get-CharmServices {
         $cinderSMBConfig = Join-Path $CINDER_INSTALL_DIR "etc\cinder\cinder-smb.conf"
         $cinderISCSIConfig = Join-Path $CINDER_INSTALL_DIR "etc\cinder\cinder-iscsi.conf"
     }
-    ElseIf($openstackVersion -eq 'queens'){
+    ElseIf($openstackVersion -eq 'queens') {
         $cinderSMBConfig = Join-Path $CINDER_INSTALL_DIR "etc\cinder-smb.conf"
         $cinderISCSIConfig = Join-Path $CINDER_INSTALL_DIR "etc\cinder-iscsi.conf"
     }
@@ -177,7 +177,13 @@ function Get-SMBShareContext {
     if(!$ctxt.Count) {
         return @{}
     }
-    $sharesConfigFile = Join-Path $CINDER_INSTALL_DIR "etc\cinder\smbfs_shares_list"
+    $openstackVersion = Get-OpenstackVersion
+    if($openstackVersion -in @('newton', 'ocata', 'pike')) {
+        $sharesConfigFile = Join-Path $CINDER_INSTALL_DIR "etc\cinder\smbfs_shares_list"
+    }
+    ElseIf($openstackVersion -eq 'queens') {
+        $sharesConfigFile = Join-Path $CINDER_INSTALL_DIR "etc\smbfs_shares_list"
+    }
     $shares = [string[]]$ctxt['share']
     [System.IO.File]::WriteAllLines($sharesConfigFile, $shares)
     return @{

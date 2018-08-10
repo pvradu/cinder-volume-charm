@@ -198,6 +198,7 @@ function Get-ServiceWrapper {
         [Parameter(Mandatory=$true)]
         [string]$InstallDir
     )
+    $openstackVersion = Get-OpenstackVersion
     if($openstackVersion -in @('newton', 'ocata', 'pike')) {
         $wrapperName = ("OpenStackService{0}.exe" -f $Service)
         $svcPath = Join-Path $InstallDir ("bin\{0}" -f $wrapperName)
@@ -209,7 +210,7 @@ function Get-ServiceWrapper {
         }
         return $svcPath
     }
-    ElseIf($openstackVersion -eq 'queens'){
+    ElseIf($openstackVersion -eq 'queens') {
         $wrapperName = ("CinderVolumeService{0}.exe" -f $Service)
         $svcPath = Join-Path $InstallDir ("bin\{0}" -f $wrapperName)
         if (!(Test-Path $svcPath)) {
